@@ -4542,8 +4542,9 @@ def _day_card_widget(self, row):
         f'<div class="event-app day-card-badges">{self._event_badges_html(row, state)}</div>'
     )
 
+    _sub_text = " \u00b7 ".join(subtitle_bits) if subtitle_bits else text_or_blank(row.get("subtitle"), strip=True) or "--"
     subtitle_html = widgets.HTML(
-        f'<div class="event-app day-card-subline">{" \u00b7 ".join(subtitle_bits) if subtitle_bits else text_or_blank(row.get("subtitle"), strip=True) or "--"}</div>'
+        f'<div class="event-app day-card-subline">{_sub_text}</div>'
     )
 
     grid_html = widgets.HTML(
@@ -4607,10 +4608,11 @@ def _patched_render_selected_day_detail(self):
         if holiday_codes:
             header_bits.append("Markets closed: " + ", ".join(sorted(holiday_codes)))
 
+        _hdr_sub = " \u00b7 ".join(header_bits)
         header = widgets.HTML(
             f'<div class="event-app day-panel-header">'
             f'<div class="day-panel-title">{safe_html(str(self.selected_day))}</div>'
-            f'<div class="day-panel-subtitle">{safe_html(" \u00b7 ".join(header_bits))}</div>'
+            f'<div class="day-panel-subtitle">{safe_html(_hdr_sub)}</div>'
             f"</div>"
         )
 

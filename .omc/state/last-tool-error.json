@@ -1,0 +1,7 @@
+{
+  "tool_name": "Bash",
+  "tool_input_preview": "{\"command\":\"cd /Users/janussuk/Desktop/Scanned_Temp && grep -n \\\"f'\\\" matt_derr_cal_full.py | grep '\\\\\\\\\\\\\\\\' | head -20 && echo \\\"---\\\" && grep -n 'f\\\"' matt_derr_cal_full.py | grep '\\\\\\\\\\\\\\\\' | head...",
+  "error": "Exit code 1\n(eval):1: unmatched '",
+  "timestamp": "2026-03-26T02:58:01.875Z",
+  "retry_count": 1
+}
