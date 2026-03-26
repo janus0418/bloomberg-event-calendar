@@ -4980,11 +4980,11 @@ def _alarm_parse_timestamp(self, row):
 def _alarm_candidates(self):
     base_df = self.events if self.events is not None and not self.events.empty else self.filtered_events
     if base_df is None or base_df.empty:
-        return pd.DataFrame(columns=list(self.master_columns) + ["alarm_timestamp"])
+        return pd.DataFrame(columns=list(self.master_columns()) + ["alarm_timestamp"])
 
     flagged_df = base_df[base_df["event_id"].map(self._row_flagged)].copy()
     if flagged_df.empty:
-        return pd.DataFrame(columns=list(self.master_columns) + ["alarm_timestamp"])
+        return pd.DataFrame(columns=list(self.master_columns()) + ["alarm_timestamp"])
 
     flagged_df["alarm_timestamp"] = flagged_df.apply(lambda row: self._alarm_parse_timestamp(row), axis=1)
     flagged_df = flagged_df[flagged_df["alarm_timestamp"].notna()].copy()
