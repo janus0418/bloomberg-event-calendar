@@ -79,8 +79,10 @@ from IPython.display import display, HTML, clear_output
 
 try:
     import bql
+    from bql import univ
 except Exception:
     bql = None
+    univ = None
 
 try:
     from docx import Document
@@ -1279,7 +1281,7 @@ class BloombergEventCalendarApp:
 
     def fetch_earnings_calendar(self, start_ts, end_ts):
         universe = self.bq.univ.filter(
-            self.bq.univ.equities(self.bq.univ('active', 'primary')),
+            self.bq.univ.equities(univ('active', 'primary')),
             self.bq.func.grouprank(self.bq.data.cur_mkt_cap(currency='USD')) <= self.top_n_market_cap
         )
         fields = {
