@@ -2637,12 +2637,12 @@ class BloombergEventCalendarApp:
                 "orig_ids": None,
             })
         if not rows:
-            return pd.DataFrame(columns=self.master_columns)
+            return pd.DataFrame(columns=self.master_columns())
         out = pd.DataFrame(rows)
-        for col in self.master_columns:
+        for col in self.master_columns():
             if col not in out.columns:
                 out[col] = None
-        return out[self.master_columns].drop_duplicates(subset=["event_id"])
+        return out[self.master_columns()].drop_duplicates(subset=["event_id"])
 
     def _current_pane_bounds(self):
         start_ts, end_ts = self._validate_dates()
@@ -2662,7 +2662,7 @@ class BloombergEventCalendarApp:
     def _export_view_frame(self, scope=None):
         scope = scope or self.export_scope_dropdown.value
         if self.filtered_events is None or self.filtered_events.empty:
-            return pd.DataFrame(columns=self.master_columns), None, None, scope
+            return pd.DataFrame(columns=self.master_columns()), None, None, scope
 
         if scope == "range":
             start_ts, end_ts = self._validate_dates()
@@ -3173,7 +3173,7 @@ class BloombergEventCalendarApp:
         if state_events is not None and not state_events.empty:
             frames.append(state_events.copy())
         if not frames:
-            return pd.DataFrame(columns=self.master_columns)
+            return pd.DataFrame(columns=self.master_columns())
         df = pd.concat(frames, ignore_index=True)
         df["event_date"] = pd.to_datetime(df["event_date"], errors="coerce")
         df = df.dropna(subset=["event_date"]).sort_values(["event_date", "title"])
@@ -4868,7 +4868,7 @@ def _patched_fetch_economic_calendar_with_central_banks(self, start_ts, end_ts):
 
 def _patched_prepare_economic_events_with_calendar_alias(self, df):
     if df is None or df.empty:
-        return pd.DataFrame(columns=self.master_columns)
+        return pd.DataFrame(columns=self.master_columns())
 
     release_date_col = pick_column(df.columns, ["RELEASE_DATE", "Release Date", "DATE", "Date"])
     time_col = pick_column(df.columns, ["RELEASE_TIME", "Release Time", "TIME", "Time"])
@@ -4930,7 +4930,7 @@ def _patched_prepare_economic_events_with_calendar_alias(self, df):
     out["expire_group_id"] = None
     out["orig_ids"] = None
     out = out[out["event_date"].notna() & out["title"].notna()]
-    return out[self.master_columns]
+    return out[self.master_columns()]
 
 
 # ---------------------------------------------------------------------------
@@ -6939,16 +6939,16 @@ def _build_hardcoded_commodity_events(start_ts=None, end_ts=None):
 
 def _hardcoded_prepare_commodity_events(self, df):
     if df is None or getattr(df, "empty", True):
-        return pd.DataFrame(columns=self.master_columns)
+        return pd.DataFrame(columns=self.master_columns())
     if isinstance(df, pd.DataFrame) and "event_id" in df.columns and "event_date" in df.columns:
         out = df.copy()
-        for col in self.master_columns:
+        for col in self.master_columns():
             if col not in out.columns:
                 out[col] = None
         out["event_date"] = pd.to_datetime(out["event_date"], errors="coerce")
         out["delivery_date"] = pd.to_datetime(out["delivery_date"], errors="coerce")
         out = out[out["event_date"].notna()].copy()
-        return out[self.master_columns].reset_index(drop=True)
+        return out[self.master_columns()].reset_index(drop=True)
     return _original_prepare_commodity_events(self, df)
 
 
@@ -6992,7 +6992,7 @@ def _hardcoded_load_from_dataframes(self, eco_df=None, earnings_df=None, comdty_
         self.end_picker.value = inferred_end.date()
         self.selected_day = inferred_start.date()
     else:
-        self.core_events = pd.DataFrame(columns=self.master_columns)
+        self.core_events = pd.DataFrame(columns=self.master_columns())
         self.selected_day = self.start_picker.value
 
     self.month_page_start = 0
@@ -7153,7 +7153,7 @@ EXPLORER_UI_PATCH_CSS = """
 
 
 def _custom_events_empty_frame(self):
-    return pd.DataFrame(columns=self.master_columns)
+    return pd.DataFrame(columns=self.master_columns())
 
 
 def _normalize_custom_event_time(value):
@@ -7228,7 +7228,7 @@ def _custom_event_row_from_form(self):
 
     event_id = _custom_event_id_from_values(event_date, time_value, title, country=country, ticker=ticker, period=period)
 
-    row = {col: None for col in self.master_columns}
+    row = {col: None for col in self.master_columns()}
     row.update({
         "event_id": event_id,
         "event_date": event_date,
@@ -7278,7 +7278,7 @@ def _load_custom_events_from_disk(self, silent=True):
         _log(f"Loaded 0 custom events from {path.resolve()}")
         return True
 
-    for col in self.master_columns:
+    for col in self.master_columns():
         if col not in df.columns:
             df[col] = None
 
@@ -7329,12 +7329,12 @@ def _load_custom_events_from_disk(self, silent=True):
         _log(f"Loaded 0 custom events from {path.resolve()}")
         return True
 
-    for col in self.master_columns:
+    for col in self.master_columns():
         if col not in df.columns:
             df[col] = None
 
     df = (
-        df[self.master_columns]
+        df[self.master_columns()]
         .drop_duplicates(subset=["event_id"], keep="last")
         .sort_values(["event_date", "event_time", "title"], na_position="last")
         .reset_index(drop=True)
@@ -7351,14 +7351,14 @@ def _save_custom_events_to_disk(self):
     path.parent.mkdir(parents=True, exist_ok=True)
 
     df = getattr(self, "custom_events", self._custom_events_empty_frame()).copy()
-    for col in self.master_columns:
+    for col in self.master_columns():
         if col not in df.columns:
             df[col] = None
     if not df.empty:
         df["event_date"] = pd.to_datetime(df["event_date"], errors="coerce").dt.strftime("%Y-%m-%d")
         if "delivery_date" in df.columns:
             df["delivery_date"] = pd.to_datetime(df["delivery_date"], errors="coerce").dt.strftime("%Y-%m-%d")
-        df = df[self.master_columns].sort_values(["event_date", "event_time", "title"], na_position="last")
+        df = df[self.master_columns()].sort_values(["event_date", "event_time", "title"], na_position="last")
     else:
         df = self._custom_events_empty_frame()
     df.to_csv(path, index=False)
@@ -7373,7 +7373,7 @@ def _custom_events_in_range(self, start_ts, end_ts):
     df = df[df["event_date"].between(pd.Timestamp(start_ts).normalize(), pd.Timestamp(end_ts).normalize())]
     if df.empty:
         return self._custom_events_empty_frame()
-    return df[self.master_columns].reset_index(drop=True)
+    return df[self.master_columns()].reset_index(drop=True)
 
 
 def _clear_custom_event_form(self, _=None):
@@ -7444,11 +7444,11 @@ def _add_custom_event(self, _=None):
     if not custom_df.empty:
         custom_df = custom_df[custom_df["event_id"] != event_id].copy()
 
-    new_row_df = pd.DataFrame({col: [row.get(col) for col in self.master_columns]}, columns=self.master_columns)
+    new_row_df = pd.DataFrame({col: [row.get(col) for col in self.master_columns()]}, columns=self.master_columns())
     custom_df = pd.concat([custom_df, new_row_df], ignore_index=True)
     custom_df["event_date"] = pd.to_datetime(custom_df["event_date"], errors="coerce")
     custom_df = (
-        custom_df[self.master_columns]
+        custom_df[self.master_columns()]
         .drop_duplicates(subset=["event_id"], keep="last")
         .sort_values(["event_date", "event_time", "title"], na_position="last")
         .reset_index(drop=True)
@@ -7723,10 +7723,10 @@ def _compose_events_for_range_with_custom(self, start_ts, end_ts):
         frames.append(custom_df.copy())
 
     if not frames:
-        return pd.DataFrame(columns=self.master_columns)
+        return pd.DataFrame(columns=self.master_columns())
 
     events = pd.concat(frames, ignore_index=True)
-    for col in self.master_columns:
+    for col in self.master_columns():
         if col not in events.columns:
             events[col] = None
     events["event_date"] = pd.to_datetime(events["event_date"], errors="coerce")
@@ -7734,7 +7734,7 @@ def _compose_events_for_range_with_custom(self, start_ts, end_ts):
     events["sort_time"] = events["event_time"].fillna("99:99")
     events["category_order"] = events["category"].map(CATEGORY_ORDER).fillna(99)
     events = (
-        events[self.master_columns + ["sort_time", "category_order"]]
+        events[self.master_columns() + ["sort_time", "category_order"]]
         .drop_duplicates(subset=["event_id"], keep="first")
         .sort_values(["event_date", "category_order", "sort_time", "title"])
         .drop(columns=["sort_time", "category_order"])
@@ -7775,7 +7775,7 @@ def _watch_source_events_with_custom(self):
     if custom_df is not None and not custom_df.empty:
         frames.append(custom_df.copy())
     if not frames:
-        return pd.DataFrame(columns=self.master_columns)
+        return pd.DataFrame(columns=self.master_columns())
     df = pd.concat(frames, ignore_index=True)
     df["event_date"] = pd.to_datetime(df["event_date"], errors="coerce")
     df = df.dropna(subset=["event_date"]).drop_duplicates(subset=["event_id"], keep="first")
